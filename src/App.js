@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Counter from "./components/Counter";
 import ClassCounter from "./components/ClassCounter";
 import "./styles/App.css";
@@ -8,23 +8,33 @@ import PostFilter from "./components/PostFilter";
 import MyModal from "./components/UI/MyModal/MyModal";
 import MyButton from "./components/UI/button/MyButton";
 import { usePosts } from "./hooks/usePosts";
+import PostService from "./API/PostService";
 
 function App() {
   const [value, setValue] = useState("0");
 
-  const [posts, setPosts] = useState([
-    { id: 1, title: "Java", body: "Programming" },
-    { id: 2, title: "Python", body: "Programming" },
-  ]);
+  const [posts, setPosts] = useState([]);
 
   const [filter, setFilter] = useState({ sort: "", query: "" });
   const [modal, setModal] = useState(false);
   const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
+  const [isPostLoading, setIsPostLoading] = useState(false);
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
     setModal(false);
   };
+
+  async function fetchPosts() {
+    setIsPostLoading(true);
+    const posts = await PostService.getAll();
+    setPosts(posts);
+    setIsPostLoading(false);
+  }
 
   const removePost = (post) => {
     setPosts(posts.filter((p) => p.id !== post.id));
@@ -48,11 +58,15 @@ function App() {
 
       <PostFilter filter={filter} setFilter={setFilter} />
 
-      <PostsList
-        remove={removePost}
-        posts={sortedAndSearchedPosts}
-        title={"Posts"}
-      />
+      {isPostLoading ? (
+        <h1>Loading...</h1>
+      ) : (
+        <PostsList
+          remove={removePost}
+          posts={sortedAndSearchedPosts}
+          title={"Posts"}
+        />
+      )}
     </div>
   );
 }
