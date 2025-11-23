@@ -1,6 +1,9 @@
 import PostItem from "./PostItem";
 
 export default function PostsList({ posts, title, remove }) {
+  if (!posts.length) {
+    return <h1 style={{ textAlign: "center" }}>No posts here!</h1>;
+  }
   return (
     <>
       <h1 style={{ textAlign: "center" }}>{title}</h1>
